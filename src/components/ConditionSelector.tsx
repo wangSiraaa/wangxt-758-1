@@ -112,7 +112,15 @@ export default function ConditionSelector({
           </button>
         </div>
 
-        {estimatedPrice !== null ? (
+        {!selectedCondition ? (
+          <div className="flex items-center gap-3 py-6 px-4 bg-amber-light/20 border border-amber/30 rounded-xl">
+            <AlertTriangle className="w-6 h-6 text-amber-dark shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-amber-dark mb-0.5">请先选择成色等级</p>
+              <p className="text-xs text-amber-dark/70">估价需要根据家电成色等级进行计算，请在上方选择对应的成色</p>
+            </div>
+          </div>
+        ) : estimatedPrice !== null ? (
           <div className="text-center py-6">
             <p className="text-sm text-gray-500 mb-2">预估回收价</p>
             <p className="text-5xl font-black text-forest">
@@ -126,7 +134,7 @@ export default function ConditionSelector({
           </div>
         ) : (
           <div className="text-center py-6 text-gray-300">
-            <p className="text-sm">选择品类和成色后点击估价</p>
+            <p className="text-sm">点击"立即估价"按钮获取回收价格</p>
           </div>
         )}
       </div>
