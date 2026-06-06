@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "check": "tsc -b --noEmit",
-    "smoke": "bash scripts/smoke.sh"
+    "smoke": "bash scripts/smoke.sh",
+    "output-biz-nos": "node scripts/output-business-nos.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -13,11 +13,14 @@ export interface ApplianceCategory {
 
 export interface Estimation {
   id: string;
+  businessNo: string;
   categoryId: string;
   conditionLevel: ConditionLevel | '';
   estimatedPrice: number | null;
   residentName: string;
   phone: string;
+  address?: string;
+  appointmentDate?: string;
   createdAt: string;
 }
 

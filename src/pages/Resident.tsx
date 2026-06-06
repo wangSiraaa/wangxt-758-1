@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useStore } from '@/store';
-import type { ConditionLevel, ApplianceCategory } from '@/types';
+import type { ConditionLevel, ApplianceCategory, Estimation } from '@/types';
 import { CONDITION_MULTIPLIERS, CONDITION_LABELS } from '@/types';
 import { CategoryGrid, default as ConditionSelector } from '@/components/ConditionSelector';
-import { CalendarDays, MapPin, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { CalendarDays, MapPin, AlertCircle, CheckCircle2, Printer } from 'lucide-react';
 
 export default function Resident() {
   const { categories, addEstimation, addAppointment, hasDuplicateAppointment, estimations } = useStore();
@@ -18,6 +18,55 @@ export default function Resident() {
   const [showConditionHint, setShowConditionHint] = useState(false);
   const [appointmentError, setAppointmentError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [lastEstimation, setLastEstimation] = useState<Estimation | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const generateBusinessNo = () => {
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const todayCount = estimations.filter((e) => e.createdAt.startsWith(now.toISOString().slice(0, 10))).length + 1;
+    return `BIZ${dateStr}${String(todayCount).padStart(4, '0')}`;
+  };
+
+  const handlePrint = () => {
+    if (!printRef.current) return;
+    const printContent = printRef.current.innerHTML;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>废旧家电回收估价清单</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 40px; color: #1a1a1a; }
+            .print-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #059669; padding-bottom: 20px; }
+            .print-title { font-size: 24px; font-weight: 900; color: #059669; margin: 0 0 10px 0; }
+            .print-subtitle { font-size: 14px; color: #6b7280; }
+            .biz-no { font-size: 16px; font-weight: bold; color: #374151; margin-top: 10px; }
+            .info-section { margin: 20px 0; }
+            .info-row { display: flex; margin: 8px 0; font-size: 14px; }
+            .info-label { width: 100px; color: #6b7280; font-weight: 500; }
+            .info-value { flex: 1; color: #1f2937; }
+            .price-section { background: #ecfdf5; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: center; }
+            .price-label { font-size: 14px; color: #047857; margin-bottom: 8px; }
+            .price-value { font-size: 36px; font-weight: 900; color: #059669; }
+            .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+            .hint-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+            .hint-text { font-size: 13px; color: #92400e; }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
 
   const handleEstimate = () => {
     if (!selectedCategory || !conditionLevel) {
@@ -40,15 +89,24 @@ export default function Resident() {
     if (!residentName.trim() || !phone.trim()) return;
 
     const estId = `est-${Date.now()}`;
-    addEstimation({
+    const businessNo = generateBusinessNo();
+    const now = new Date().toISOString();
+
+    const estimationData: Estimation = {
       id: estId,
+      businessNo,
       categoryId: selectedCategory.id,
       conditionLevel,
       estimatedPrice,
       residentName: residentName.trim(),
       phone: phone.trim(),
-      createdAt: new Date().toISOString(),
-    });
+      address: address.trim() || undefined,
+      appointmentDate: date || undefined,
+      createdAt: now,
+    };
+
+    addEstimation(estimationData);
+    setLastEstimation(estimationData);
 
     if (address.trim() && date && !selectedCategory.hazardous) {
       if (hasDuplicateAppointment(address.trim(), date)) {
@@ -61,22 +119,11 @@ export default function Resident() {
         address: address.trim(),
         date,
         status: 'pending',
-        createdAt: new Date().toISOString(),
+        createdAt: now,
       });
     }
 
-    setSuccessMsg('估价已提交成功！');
-    setTimeout(() => {
-      setSelectedCategory(null);
-      setConditionLevel('');
-      setEstimatedPrice(null);
-      setResidentName('');
-      setPhone('');
-      setAddress('');
-      setDate('');
-      setAppointmentError('');
-      setSuccessMsg('');
-    }, 2000);
+    setSuccessMsg(`估价已提交成功！业务编号：${businessNo}`);
   };
 
   return (
@@ -86,10 +133,40 @@ export default function Resident() {
         <p className="text-gray-500 mt-1">选择品类、填写成色，即时获取估价</p>
       </div>
 
-      {successMsg && (
-        <div className="mb-6 flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-4">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span className="text-emerald-700 font-medium">{successMsg}</span>
+      {successMsg && lastEstimation && (
+        <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span className="text-emerald-700 font-medium">{successMsg}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setConditionLevel('');
+                  setEstimatedPrice(null);
+                  setResidentName('');
+                  setPhone('');
+                  setAddress('');
+                  setDate('');
+                  setAppointmentError('');
+                  setSuccessMsg('');
+                  setLastEstimation(null);
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-white text-forest border border-forest-200 hover:bg-forest-50 transition-colors"
+              >
+                继续估价
+              </button>
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-forest text-white hover:bg-forest-light shadow-md hover:shadow-lg transition-all"
+              >
+                <Printer className="w-4 h-4" />
+                打印清单
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -207,6 +284,80 @@ export default function Resident() {
             </div>
           )}
         </div>
+      </div>
+
+      <div ref={printRef} style={{ display: 'none' }}>
+        {lastEstimation && (
+          <>
+            <div className="print-header">
+              <h1 className="print-title">废旧家电回收估价清单</h1>
+              <p className="print-subtitle">专业回收 · 绿色环保 · 价格透明</p>
+              <div className="biz-no">业务编号：{lastEstimation.businessNo}</div>
+            </div>
+
+            <div className="info-section">
+              <div className="info-row">
+                <span className="info-label">家电品类</span>
+                <span className="info-value">{categories.find(c => c.id === lastEstimation.categoryId)?.name || '-'}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">成色等级</span>
+                <span className="info-value">{lastEstimation.conditionLevel ? CONDITION_LABELS[lastEstimation.conditionLevel] : '-'}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">估价基数</span>
+                <span className="info-value">¥{categories.find(c => c.id === lastEstimation.categoryId)?.basePrice || 0}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">折算比例</span>
+                <span className="info-value">{lastEstimation.conditionLevel ? CONDITION_MULTIPLIERS[lastEstimation.conditionLevel] * 100 : 0}%</span>
+              </div>
+            </div>
+
+            <div className="price-section">
+              <p className="price-label">预估回收价格</p>
+              <p className="price-value">¥{lastEstimation.estimatedPrice || 0}</p>
+            </div>
+
+            <div className="info-section">
+              <div className="info-row">
+                <span className="info-label">居民姓名</span>
+                <span className="info-value">{lastEstimation.residentName}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">联系电话</span>
+                <span className="info-value">{lastEstimation.phone}</span>
+              </div>
+              {lastEstimation.address && (
+                <div className="info-row">
+                  <span className="info-label">回收地址</span>
+                  <span className="info-value">{lastEstimation.address}</span>
+                </div>
+              )}
+              {lastEstimation.appointmentDate && (
+                <div className="info-row">
+                  <span className="info-label">预约日期</span>
+                  <span className="info-value">{lastEstimation.appointmentDate}</span>
+                </div>
+              )}
+              <div className="info-row">
+                <span className="info-label">估价时间</span>
+                <span className="info-value">{new Date(lastEstimation.createdAt).toLocaleString('zh-CN')}</span>
+              </div>
+            </div>
+
+            {categories.find(c => c.id === lastEstimation.categoryId)?.hazardous && (
+              <div className="hint-box">
+                <p className="hint-text">⚠️ 该品类为危险拆解品类，不支持上门回收，请您送至指定回收点</p>
+              </div>
+            )}
+
+            <div className="footer">
+              <p>本清单仅作估价参考，实际回收价格以现场检测为准</p>
+              <p>感谢您对环保事业的支持！</p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -60,7 +60,8 @@ export default function Collector() {
 
       {activeTab === 'estimations' && (
         <div className="bg-white rounded-2xl shadow-sm border border-forest-100 overflow-hidden">
-          <div className="grid grid-cols-6 gap-4 px-6 py-3 bg-forest-50 text-xs font-bold text-forest uppercase tracking-wider">
+          <div className="grid grid-cols-7 gap-4 px-6 py-3 bg-forest-50 text-xs font-bold text-forest uppercase tracking-wider">
+            <span>业务编号</span>
             <span>品类</span>
             <span>成色</span>
             <span>估价</span>
@@ -79,8 +80,9 @@ export default function Collector() {
               return (
                 <div
                   key={est.id}
-                  className="grid grid-cols-6 gap-4 px-6 py-4 border-t border-gray-50 hover:bg-forest-50/50 transition-colors items-center"
+                  className="grid grid-cols-7 gap-4 px-6 py-4 border-t border-gray-50 hover:bg-forest-50/50 transition-colors items-center"
                 >
+                  <span className="text-xs font-mono text-forest font-bold">{est.businessNo}</span>
                   <div className="flex items-center gap-2">
                     <span className="w-7 h-7 rounded-lg bg-forest-50 text-forest flex items-center justify-center text-xs font-bold">
                       {getCategoryName(est.categoryId)[0]}

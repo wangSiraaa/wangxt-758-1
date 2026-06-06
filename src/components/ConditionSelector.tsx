@@ -30,8 +30,6 @@ export default function ConditionSelector({
   onEstimate,
   showConditionHint,
 }: Props) {
-  const { categories } = useStore();
-
   if (!category) {
     return (
       <div className="flex items-center justify-center h-64 text-forest-light/50">

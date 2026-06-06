@@ -1,0 +1,73 @@
+{
+  "categories": [
+    { "id": "cat-1", "name": "电视机", "icon": "Tv", "basePrice": 200, "hazardous": false, "description": "各类液晶、CRT电视" },
+    { "id": "cat-2", "name": "冰箱", "icon": "Refrigerator", "basePrice": 300, "hazardous": true, "description": "含制冷剂，需专业拆解" },
+    { "id": "cat-3", "name": "洗衣机", "icon": "WashingMachine", "basePrice": 180, "hazardous": false, "description": "滚筒/波轮洗衣机" },
+    { "id": "cat-4", "name": "空调", "icon": "AirVent", "basePrice": 350, "hazardous": true, "description": "含氟利昂，需专业回收" },
+    { "id": "cat-5", "name": "电脑", "icon": "Monitor", "basePrice": 150, "hazardous": false, "description": "台式机/笔记本" },
+    { "id": "cat-6", "name": "微波炉", "icon": "Microwave", "basePrice": 80, "hazardous": false, "description": "家用微波炉" },
+    { "id": "cat-7", "name": "热水器", "icon": "Flame", "basePrice": 120, "hazardous": true, "description": "含燃气/电热组件，需专业拆解" },
+    { "id": "cat-8", "name": "电风扇", "icon": "Fan", "basePrice": 30, "hazardous": false, "description": "台扇/落地扇" }
+  ],
+  "serviceAreas": [
+    { "id": "area-1", "name": "朝阳区", "active": true },
+    { "id": "area-2", "name": "海淀区", "active": true },
+    { "id": "area-3", "name": "丰台区", "active": true },
+    { "id": "area-4", "name": "西城区", "active": false },
+    { "id": "area-5", "name": "东城区", "active": true }
+  ],
+  "estimations": [
+    {
+      "id": "est-seed-1",
+      "businessNo": "BIZ202606060001",
+      "categoryId": "cat-1",
+      "conditionLevel": "seventy_pct",
+      "estimatedPrice": 100,
+      "residentName": "测试用户1",
+      "phone": "13800138001",
+      "address": "朝阳区建国路88号",
+      "appointmentDate": "2026-06-08",
+      "createdAt": "2026-06-06T09:00:00Z"
+    },
+    {
+      "id": "est-seed-2",
+      "businessNo": "BIZ202606060002",
+      "categoryId": "cat-3",
+      "conditionLevel": "ninety_pct",
+      "estimatedPrice": 135,
+      "residentName": "测试用户2",
+      "phone": "13800138002",
+      "address": "海淀区中关村大街1号",
+      "appointmentDate": "2026-06-09",
+      "createdAt": "2026-06-06T10:30:00Z"
+    },
+    {
+      "id": "est-seed-3",
+      "businessNo": "BIZ202606060003",
+      "categoryId": "cat-2",
+      "conditionLevel": "fifty_pct",
+      "estimatedPrice": 90,
+      "residentName": "测试用户3",
+      "phone": "13800138003",
+      "createdAt": "2026-06-06T14:00:00Z"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "apt-seed-1",
+      "estimationId": "est-seed-1",
+      "address": "朝阳区建国路88号",
+      "date": "2026-06-08",
+      "status": "pending",
+      "createdAt": "2026-06-06T09:05:00Z"
+    },
+    {
+      "id": "apt-seed-2",
+      "estimationId": "est-seed-2",
+      "address": "海淀区中关村大街1号",
+      "date": "2026-06-09",
+      "status": "confirmed",
+      "createdAt": "2026-06-06T10:35:00Z"
+    }
+  ]
+}
